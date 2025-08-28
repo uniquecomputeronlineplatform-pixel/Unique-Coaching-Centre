@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ইউনিক কোচিং সেন্টার হিসাব</title>
+    <meta name="theme-color" content="#0a0a2a">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
@@ -78,6 +79,17 @@
             color: #00e5ff;
             cursor: pointer;
             font-weight: 500;
+        }
+        /* Custom scrollbar for description */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 20px;
         }
     </style>
 </head>
@@ -389,9 +401,22 @@
                     transactions.forEach((t, index) => {
                         const amount = parseFloat(t.amount);
                         if (t.type === 'income') totalIncome += amount; else totalExpense += amount;
+                        
+                        const dateObj = new Date(t.date);
+                        const day = dateObj.getDate();
+                        const month = dateObj.getMonth() + 1;
+                        const year = dateObj.getFullYear().toString().slice(-2);
+                        const formattedDate = `${day}/${month}/${year}`;
+
                         const row = document.createElement('tr');
                         row.className = `border-b border-slate-800 ${t.type === 'income' ? 'text-green-400' : 'text-red-400'}`;
-                        row.innerHTML = `<td class="p-2 text-center text-gray-400">${index + 1}</td><td class="p-2">${new Date(t.date).toLocaleDateString('bn-BD')}</td><td class="p-2 capitalize">${t.type === 'income' ? 'আয়' : 'ব্যয়'}</td><td class="p-2 text-gray-300">${t.biboron || ''}</td><td class="p-2 text-right font-mono">৳ ${amount.toLocaleString('bn-BD')}</td>`;
+                        row.innerHTML = `
+                            <td class="p-2 text-center text-gray-400">${index + 1}</td>
+                            <td class="p-2">${formattedDate}</td>
+                            <td class="p-2 capitalize">${t.type === 'income' ? 'আয়' : 'ব্যয়'}</td>
+                            <td class="p-2 text-gray-300"><div class="max-w-[200px] overflow-x-auto whitespace-nowrap custom-scrollbar pb-1">${t.biboron || ''}</div></td>
+                            <td class="p-2 text-right font-mono">৳ ${amount.toLocaleString('bn-BD')}</td>
+                        `;
                         transactionListBody.appendChild(row);
                     });
                 }
