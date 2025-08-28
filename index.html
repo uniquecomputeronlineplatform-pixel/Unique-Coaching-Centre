@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ইউনিক কোচিং সেন্টার হিসাব</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Datalabels Plugin for showing percentages -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a2a;
+            color: #ffffff;
+        }
+        .neon-button {
+            background-color: transparent;
+            border: 2px solid #00e5ff;
+            color: #00e5ff;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px #00e5ff;
+        }
+        .neon-button:hover {
+            background-color: #00e5ff;
+            color: #0a0a2a;
+            box-shadow: 0 0 20px #00e5ff, 0 0 30px #00e5ff;
+        }
+        .neon-input {
+            background-color: rgba(0, 229, 255, 0.1);
+            border: 2px solid #00e5ff;
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+        .neon-input:focus {
+            outline: none;
+            box-shadow: 0 0 15px #00e5ff;
+            border-color: #00ffff;
+        }
+        select option { color: #111827; }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(1.5) sepia(1) hue-rotate(180deg);
+            cursor: pointer;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        .popup-animate { animation: fadeInOut 3s ease-in-out forwards; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #00e5ff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .toggle-link {
+            color: #00e5ff;
+            cursor: pointer;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-6 md:p-8">
+
+    <!-- Auth Wrapper -->
+    <div id="authWrapper" class="flex items-center justify-center min-h-screen">
+        <main class="max-w-sm w-full">
+            <!-- Login Page -->
+            <div id="loginPage">
+                <h1 class="text-3xl font-bold text-cyan-400 text-center mb-8">Admin Login</h1>
+                <form id="loginForm" class="space-y-6 bg-slate-900/50 p-8 rounded-xl shadow-2xl shadow-cyan-500/10">
+                    <div>
+                        <label for="adminId" class="block mb-2 text-sm font-medium text-gray-300">Admin ID</label>
+                        <input type="text" id="adminId" name="adminId" class="neon-input w-full p-3 rounded-lg" required autocomplete="username">
+                    </div>
+                    <div>
+                        <label for="adminPassword" class="block mb-2 text-sm font-medium text-gray-300">Password</label>
+                        <input type="password" id="adminPassword" name="adminPassword" class="neon-input w-full p-3 rounded-lg" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" id="loginButton" class="w-full neon-button font-bold py-3 px-6 rounded-lg text-lg flex justify-center items-center">লগইন</button>
+                    <p id="loginError" class="text-red-400 text-center h-4"></p>
+                    <p class="text-center text-gray-400">কোনো অ্যাকাউন্ট নেই? <button type="button" id="showSignupBtn" class="toggle-link">সাইনআপ করুন</button></p>
+                </form>
+            </div>
+            <!-- Signup Page -->
+            <div id="signupPage" class="hidden">
+                <h1 class="text-3xl font-bold text-cyan-400 text-center mb-8">Create Account</h1>
+                <form id="signupForm" class="space-y-6 bg-slate-900/50 p-8 rounded-xl shadow-2xl shadow-cyan-500/10">
+                    <div>
+                        <label for="signupName" class="block mb-2 text-sm font-medium text-gray-300">নাম</label>
+                        <input type="text" id="signupName" class="neon-input w-full p-3 rounded-lg" required>
+                    </div>
+                    <div>
+                        <label for="signupId" class="block mb-2 text-sm font-medium text-gray-300">ইউজার আইডি</label>
+                        <input type="text" id="signupId" class="neon-input w-full p-3 rounded-lg" required autocomplete="username">
+                    </div>
+                    <div>
+                        <label for="signupPassword" class="block mb-2 text-sm font-medium text-gray-300">পাসওয়ার্ড</label>
+                        <input type="password" id="signupPassword" class="neon-input w-full p-3 rounded-lg" required autocomplete="new-password">
+                    </div>
+                    <button type="submit" id="signupButton" class="w-full neon-button font-bold py-3 px-6 rounded-lg text-lg flex justify-center items-center">সাইনআপ</button>
+                    <p id="signupError" class="text-red-400 text-center h-4"></p>
+                    <p class="text-center text-gray-400">ইতিমধ্যে অ্যাকাউন্ট আছে? <button type="button" id="showLoginBtn" class="toggle-link">লগইন করুন</button></p>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Main Application Wrapper -->
+    <div id="appWrapper" class="hidden">
+        <!-- Main Page -->
+        <div id="mainPage">
+            <header class="flex justify-between items-center mb-8">
+                <h1 class="text-2xl sm:text-3xl font-bold text-cyan-400">UNIQUE COACHING CENTRE</h1>
+                <div>
+                    <button id="dataButton" class="neon-button font-semibold py-2 px-6 rounded-lg">Data</button>
+                    <button id="logoutButtonMain" class="ml-2 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 px-6 rounded-lg">লগআউট</button>
+                </div>
+            </header>
+
+            <main class="max-w-md mx-auto mt-10">
+                <form id="transactionForm" class="space-y-6 bg-slate-900/50 p-6 rounded-xl shadow-2xl shadow-cyan-500/10">
+                    <div><label for="date" class="block mb-2 text-sm font-medium text-gray-300">তারিখ</label><input type="date" id="date" name="date" class="neon-input w-full p-3 rounded-lg" required></div>
+                    <div><label for="type" class="block mb-2 text-sm font-medium text-gray-300">আয়ের ধরণ</label><select id="type" name="type" class="neon-input w-full p-3 rounded-lg" required><option value="income">আয়</option><option value="expense">ব্যয়</option></select></div>
+                    <div><label for="description" class="block mb-2 text-sm font-medium text-gray-300">বিবরণ</label><textarea id="description" name="description" rows="3" placeholder="লেনদেনের বিবরণ লিখুন" class="neon-input w-full p-3 rounded-lg"></textarea></div>
+                    <div><label for="amount" class="block mb-2 text-sm font-medium text-gray-300">টাকার পরিমাণ</label><input type="number" id="amount" name="amount" inputmode="decimal" placeholder="Amount in Taka" class="neon-input w-full p-3 rounded-lg" required></div>
+                    <button type="submit" id="submitButton" class="w-full neon-button font-bold py-3 px-6 rounded-lg text-lg flex justify-center items-center">সাবমিট</button>
+                </form>
+            </main>
+        </div>
+
+        <!-- Data Page -->
+        <div id="dataPage" class="hidden">
+            <header class="flex justify-between items-center mb-8">
+                <div class="flex items-center gap-4"><button id="backButton" class="neon-button font-semibold py-2 px-6 rounded-lg">&larr; Back</button><h1 class="text-xl sm:text-2xl font-bold text-cyan-400 hidden sm:block">UNIQUE COACHING CENTRE</h1></div>
+                <button id="logoutButtonData" class="bg-red-600 hover:bg-red-500 text-white font-semibold py-2 px-6 rounded-lg">লগআউট</button>
+            </header>
+            <main>
+                <div class="bg-slate-900/50 p-4 rounded-xl shadow-lg shadow-cyan-500/10 mb-8 flex flex-col sm:flex-row sm:items-end gap-4">
+                    <div class="flex-grow"><label for="startDate" class="text-sm text-gray-400">শুরুর তারিখ</label><input type="date" id="startDate" class="neon-input w-full p-2 rounded-lg mt-1"></div>
+                    <div class="flex-grow"><label for="endDate" class="text-sm text-gray-400">শেষের তারিখ</label><input type="date" id="endDate" class="neon-input w-full p-2 rounded-lg mt-1"></div>
+                    <div class="flex gap-2 w-full sm:w-auto"><button id="searchButton" class="neon-button font-semibold py-2 px-6 rounded-lg w-full sm:w-auto">সার্চ</button><button id="resetButton" class="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-6 rounded-lg w-full sm:w-auto transition-colors">রিসেট</button></div>
+                </div>
+                <div id="dataLoader" class="flex justify-center items-center h-64"><div class="loader"></div></div>
+                <div id="dataContent" class="hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-slate-900/50 p-6 rounded-xl shadow-lg shadow-cyan-500/10 flex flex-col justify-center space-y-4">
+                            <div class="flex justify-between items-center text-lg"><span class="font-medium text-gray-300">মোট টাকার পরিমাণ:</span><span class="font-bold text-2xl text-white" id="totalCashFlow">৳ 0</span></div><hr class="border-slate-700"/>
+                            <div class="flex justify-between items-center text-lg"><span class="font-medium text-green-400">আয়:</span><span class="font-bold text-xl text-green-400" id="totalIncome">৳ 0</span></div>
+                            <div class="flex justify-between items-center text-lg"><span class="font-medium text-red-400">ব্যয়:</span><span class="font-bold text-xl text-red-400" id="totalExpense">৳ 0</span></div><hr class="border-slate-700"/>
+                            <div class="flex justify-between items-center text-lg"><span class="font-medium text-cyan-400">লাভ:</span><span class="font-bold text-2xl text-cyan-400" id="totalProfit">৳ 0</span></div>
+                        </div>
+                        <div class="bg-slate-900/50 p-6 rounded-xl shadow-lg shadow-cyan-500/10 flex flex-col justify-center items-center"><h3 id="chartTitle" class="text-lg font-semibold text-gray-300 mb-4"></h3><div class="w-full max-w-sm"><canvas id="transactionChart"></canvas></div></div>
+                    </div>
+                    <div class="mt-8 bg-slate-900/50 p-6 rounded-xl shadow-lg shadow-cyan-500/10">
+                        <h3 class="text-xl font-bold mb-4 text-cyan-400">লেনদেনের তালিকা</h3>
+                        <div class="max-h-96 overflow-y-auto"><table class="w-full text-left"><thead><tr class="border-b border-cyan-700"><th class="p-2 w-12 text-center">নং</th><th class="p-2">তারিখ</th><th class="p-2">ধরন</th><th class="p-2">বিবরণ</th><th class="p-2 text-right">পরিমাণ</th></tr></thead><tbody id="transactionList"></tbody></table></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <div id="popup" class="hidden fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-lg"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby7XFTC6FZfj2U8j6Q2TgpZ1oSSg8pg6Rinz3-t698guodVb31Ym3UdHO-iyHi02GRIEw/exec';
+            Chart.register(ChartDataLabels);
+
+            // Page Elements
+            const authWrapper = document.getElementById('authWrapper');
+            const loginPage = document.getElementById('loginPage');
+            const signupPage = document.getElementById('signupPage');
+            const appWrapper = document.getElementById('appWrapper');
+            const mainPage = document.getElementById('mainPage');
+            const dataPage = document.getElementById('dataPage');
+            
+            // Auth Elements
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const loginButton = document.getElementById('loginButton');
+            const signupButton = document.getElementById('signupButton');
+            const loginError = document.getElementById('loginError');
+            const signupError = document.getElementById('signupError');
+            const showSignupBtn = document.getElementById('showSignupBtn');
+            const showLoginBtn = document.getElementById('showLoginBtn');
+
+            // App Elements
+            const dataButton = document.getElementById('dataButton');
+            const backButton = document.getElementById('backButton');
+            const logoutButtonMain = document.getElementById('logoutButtonMain');
+            const logoutButtonData = document.getElementById('logoutButtonData');
+            const transactionForm = document.getElementById('transactionForm');
+            const dateInput = document.getElementById('date');
+            const popup = document.getElementById('popup');
+            const submitButton = document.getElementById('submitButton');
+            
+            // Data Page Elements
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const searchButton = document.getElementById('searchButton');
+            const resetButton = document.getElementById('resetButton');
+            const totalCashFlowEl = document.getElementById('totalCashFlow');
+            const totalIncomeEl = document.getElementById('totalIncome');
+            const totalExpenseEl = document.getElementById('totalExpense');
+            const totalProfitEl = document.getElementById('totalProfit');
+            const transactionListBody = document.getElementById('transactionList');
+            const chartCanvas = document.getElementById('transactionChart');
+            const chartTitleEl = document.getElementById('chartTitle');
+            const dataLoader = document.getElementById('dataLoader');
+            const dataContent = document.getElementById('dataContent');
+            let transactionChart = null;
+            let allTransactions = [];
+
+            // --- Core Functions ---
+            const setTodayDate = () => { dateInput.value = new Date().toISOString().split('T')[0]; };
+            const showPopup = (message, isError = false) => {
+                popup.textContent = message;
+                popup.className = `fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-lg ${isError ? 'bg-red-500' : 'bg-green-500'}`;
+                popup.classList.add('popup-animate');
+                setTimeout(() => { popup.classList.add('hidden'); popup.classList.remove('popup-animate'); }, 4000);
+            };
+            const showLogin = () => {
+                appWrapper.classList.add('hidden');
+                authWrapper.classList.remove('hidden');
+                signupPage.classList.add('hidden');
+                loginPage.classList.remove('hidden');
+            };
+            const showSignup = () => {
+                loginPage.classList.add('hidden');
+                signupPage.classList.remove('hidden');
+            };
+            const showApp = () => {
+                authWrapper.classList.add('hidden');
+                appWrapper.classList.remove('hidden');
+                mainPage.classList.remove('hidden');
+                dataPage.classList.add('hidden');
+            };
+            const handleLogout = () => {
+                localStorage.removeItem('isLoggedIn');
+                showLogin();
+            };
+
+            // --- Event Listeners ---
+            showSignupBtn.addEventListener('click', showSignup);
+            showLoginBtn.addEventListener('click', showLogin);
+
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                loginButton.disabled = true;
+                loginButton.innerHTML = `<div class="loader !w-6 !h-6 !border-2"></div>`;
+                loginError.textContent = '';
+                const payload = { action: 'login', id: loginForm.adminId.value, password: loginForm.adminPassword.value };
+                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            localStorage.setItem('isLoggedIn', 'true');
+                            showApp();
+                        } else { throw new Error(data.message || 'Login failed'); }
+                    })
+                    .catch(error => { loginError.textContent = error.message; })
+                    .finally(() => { loginButton.disabled = false; loginButton.textContent = 'লগইন'; });
+            });
+
+            signupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                signupButton.disabled = true;
+                signupButton.innerHTML = `<div class="loader !w-6 !h-6 !border-2"></div>`;
+                signupError.textContent = '';
+                const payload = { action: 'signup', name: signupForm.signupName.value, id: signupForm.signupId.value, password: signupForm.signupPassword.value };
+                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            showPopup(data.message);
+                            signupForm.reset();
+                            showLogin();
+                        } else { throw new Error(data.message || 'Signup failed'); }
+                    })
+                    .catch(error => { signupError.textContent = error.message; })
+                    .finally(() => { signupButton.disabled = false; signupButton.textContent = 'সাইনআপ'; });
+            });
+
+            dataButton.addEventListener('click', () => { mainPage.classList.add('hidden'); dataPage.classList.remove('hidden'); fetchAndRenderData(); });
+            backButton.addEventListener('click', () => { dataPage.classList.add('hidden'); mainPage.classList.remove('hidden'); });
+            logoutButtonMain.addEventListener('click', handleLogout);
+            logoutButtonData.addEventListener('click', handleLogout);
+
+            transactionForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                submitButton.disabled = true;
+                submitButton.innerHTML = `<div class="loader !w-6 !h-6 !border-2"></div>`;
+                const payload = { action: 'addTransaction', transaction: { id: Date.now(), date: transactionForm.date.value, type: transactionForm.type.value, amount: parseFloat(transactionForm.amount.value), description: transactionForm.description.value }};
+                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.success) { showPopup('লেনদেন সফলভাবে জমা হয়েছে!'); transactionForm.reset(); setTodayDate(); } 
+                        else { throw new Error(data.message || 'Something went wrong'); }
+                    })
+                    .catch(error => { showPopup(`একটি ত্রুটি হয়েছে: ${error.message}`, true); })
+                    .finally(() => { submitButton.disabled = false; submitButton.textContent = 'সাবমিট'; });
+            });
+            
+            const fetchAndRenderData = () => {
+                dataLoader.classList.remove('hidden'); dataContent.classList.add('hidden');
+                fetch(SCRIPT_URL)
+                    .then(res => res.json())
+                    .then(res => {
+                        if(res.success) { allTransactions = res.data; renderDataPage(); } 
+                        else { throw new Error(res.message); }
+                    })
+                    .catch(error => { dataLoader.innerHTML = `<p class="text-red-400">ডেটা আনতে সমস্যা হয়েছে: ${error.message}</p>`; })
+                    .finally(() => { dataLoader.classList.add('hidden'); dataContent.classList.remove('hidden'); });
+            };
+            
+            const renderDataPage = (transactions = allTransactions) => {
+                let totalIncome = 0, totalExpense = 0;
+                transactionListBody.innerHTML = ''; 
+                if (!transactions || transactions.length === 0) {
+                     transactionListBody.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-gray-400">কোনো লেনদেন পাওয়া যায়নি।</td></tr>`;
+                } else {
+                    transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    transactions.forEach((t, index) => {
+                        const amount = parseFloat(t.amount);
+                        if (t.type === 'income') totalIncome += amount; else totalExpense += amount;
+                        const row = document.createElement('tr');
+                        row.className = `border-b border-slate-800 ${t.type === 'income' ? 'text-green-400' : 'text-red-400'}`;
+                        row.innerHTML = `<td class="p-2 text-center text-gray-400">${index + 1}</td><td class="p-2">${new Date(t.date).toLocaleDateString('bn-BD')}</td><td class="p-2 capitalize">${t.type === 'income' ? 'আয়' : 'ব্যয়'}</td><td class="p-2 text-gray-300">${t.biboron || ''}</td><td class="p-2 text-right font-mono">৳ ${amount.toLocaleString('bn-BD')}</td>`;
+                        transactionListBody.appendChild(row);
+                    });
+                }
+                const totalProfit = totalIncome - totalExpense;
+                const totalCashFlow = totalIncome + totalExpense;
+                totalCashFlowEl.textContent = `৳ ${totalCashFlow.toLocaleString('bn-BD')}`;
+                totalIncomeEl.textContent = `৳ ${totalIncome.toLocaleString('bn-BD')}`;
+                totalExpenseEl.textContent = `৳ ${totalExpense.toLocaleString('bn-BD')}`;
+                totalProfitEl.textContent = `৳ ${totalProfit.toLocaleString('bn-BD')}`;
+                if (transactionChart) transactionChart.destroy();
+                let chartData, chartLabels, chartColors;
+                if (totalIncome > 0) {
+                    chartTitleEl.textContent = 'আয়ের বন্টন';
+                    chartLabels = ['খরচ', 'লাভ'];
+                    chartData = [totalExpense, totalProfit > 0 ? totalProfit : 0];
+                    chartColors = ['rgba(239, 68, 68, 0.7)', 'rgba(34, 197, 94, 0.7)'];
+                } else {
+                    chartTitleEl.textContent = 'কোনো আয় নেই';
+                    chartLabels = ['ব্যয়'];
+                    chartData = [totalExpense];
+                    chartColors = ['rgba(239, 68, 68, 0.7)'];
+                }
+                transactionChart = new Chart(chartCanvas, {
+                    type: 'pie', data: { labels: chartLabels, datasets: [{ data: chartData, backgroundColor: chartColors, borderColor: ['#0a0a2a'], borderWidth: 2 }] },
+                    options: { responsive: true, plugins: { legend: { position: 'top', labels: { color: '#ffffff' } }, tooltip: { callbacks: { label: (c) => { const t = c.chart.data.datasets[0].data.reduce((a, b) => a + b, 0); const v = c.parsed; const p = t > 0 ? ((v / t) * 100).toFixed(1) : 0; return `${c.label}: ৳ ${v.toLocaleString('bn-BD')} (${p}%)`; } } }, datalabels: { formatter: (v, c) => { const s = c.chart.data.datasets[0].data.reduce((a, b) => a + b, 0); if (v === 0) return ''; return s > 0 ? (v * 100 / s).toFixed(1) + "%" : '0%'; }, color: '#ffffff', font: { weight: 'bold', size: 14 }}}}
+                });
+            };
+            searchButton.addEventListener('click', () => {
+                const startDate = startDateInput.value; const endDate = endDateInput.value;
+                if (startDate && endDate) {
+                    const filtered = allTransactions.filter(t => { const transactionDate = new Date(t.date).toISOString().split('T')[0]; return transactionDate >= startDate && transactionDate <= endDate; });
+                    renderDataPage(filtered);
+                } else { alert('অনুগ্রহ করে শুরুর এবং শেষের তারিখ উভয়ই নির্বাচন করুন।'); }
+            });
+            resetButton.addEventListener('click', () => { startDateInput.value = ''; endDateInput.value = ''; renderDataPage(allTransactions); });
+            
+            // --- Initial Check ---
+            if (localStorage.getItem('isLoggedIn') === 'true') { showApp(); } else { showLogin(); }
+            setTodayDate();
+        });
+    </script>
+</body>
+</html>
