@@ -27,10 +27,17 @@
             transition: all 0.3s ease;
             box-shadow: 0 0 10px #00e5ff;
         }
-        .neon-button:hover {
+        .neon-button:hover:not(:disabled) {
             background-color: #00e5ff;
             color: #0a0a2a;
             box-shadow: 0 0 20px #00e5ff, 0 0 30px #00e5ff;
+        }
+        .neon-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+            border-color: #557a80;
+            color: #557a80;
+            box-shadow: none;
         }
         .neon-input {
             background-color: rgba(0, 229, 255, 0.1);
@@ -74,10 +81,10 @@
         }
     </style>
 </head>
-<body class="min-h-screen p-4 sm:p-6 md:p-8">
+<body class="min-h-screen">
 
     <!-- Auth Wrapper -->
-    <div id="authWrapper" class="flex items-center justify-center min-h-screen">
+    <div id="authWrapper" class="flex items-center justify-center min-h-screen p-4">
         <main class="max-w-sm w-full">
             <!-- Login Page -->
             <div id="loginPage">
@@ -85,13 +92,13 @@
                 <form id="loginForm" class="space-y-6 bg-slate-900/50 p-8 rounded-xl shadow-2xl shadow-cyan-500/10">
                     <div>
                         <label for="adminId" class="block mb-2 text-sm font-medium text-gray-300">Admin ID</label>
-                        <input type="text" id="adminId" name="adminId" class="neon-input w-full p-3 rounded-lg" required autocomplete="username">
+                        <input type="text" id="adminId" name="adminId" class="neon-input w-full p-3 rounded-lg login-field" required autocomplete="username">
                     </div>
                     <div>
                         <label for="adminPassword" class="block mb-2 text-sm font-medium text-gray-300">Password</label>
-                        <input type="password" id="adminPassword" name="adminPassword" class="neon-input w-full p-3 rounded-lg" required autocomplete="current-password">
+                        <input type="password" id="adminPassword" name="adminPassword" class="neon-input w-full p-3 rounded-lg login-field" required autocomplete="current-password">
                     </div>
-                    <button type="submit" id="loginButton" class="w-full neon-button font-bold py-3 px-6 rounded-lg text-lg flex justify-center items-center">লগইন</button>
+                    <button type="submit" id="loginButton" class="w-full neon-button font-bold py-3 px-6 rounded-lg text-lg flex justify-center items-center" disabled>লগইন</button>
                     <p id="loginError" class="text-red-400 text-center h-4"></p>
                     <p class="text-center text-gray-400">কোনো অ্যাকাউন্ট নেই? <button type="button" id="showSignupBtn" class="toggle-link">সাইনআপ করুন</button></p>
                 </form>
@@ -102,17 +109,17 @@
                 <form id="signupForm" class="space-y-6 bg-slate-900/50 p-8 rounded-xl shadow-2xl shadow-cyan-500/10">
                     <div>
                         <label for="signupName" class="block mb-2 text-sm font-medium text-gray-300">নাম</label>
-                        <input type="text" id="signupName" class="neon-input w-full p-3 rounded-lg" required>
+                        <input type="text" id="signupName" class="neon-input w-full p-3 rounded-lg signup-field" required>
                     </div>
                     <div>
                         <label for="signupId" class="block mb-2 text-sm font-medium text-gray-300">ইউজার আইডি</label>
-                        <input type="text" id="signupId" class="neon-input w-full p-3 rounded-lg" required autocomplete="username">
+                        <input type="text" id="signupId" class="neon-input w-full p-3 rounded-lg signup-field" required autocomplete="username">
                     </div>
                     <div>
                         <label for="signupPassword" class="block mb-2 text-sm font-medium text-gray-300">পাসওয়ার্ড</label>
-                        <input type="password" id="signupPassword" class="neon-input w-full p-3 rounded-lg" required autocomplete="new-password">
+                        <input type="password" id="signupPassword" class="neon-input w-full p-3 rounded-lg signup-field" required autocomplete="new-password">
                     </div>
-                    <button type="submit" id="signupButton" class="w-full neon-button font-bold py-3 px-6 rounded-lg text-lg flex justify-center items-center">সাইনআপ</button>
+                    <button type="submit" id="signupButton" class="w-full neon-button font-bold py-3 px-6 rounded-lg text-lg flex justify-center items-center" disabled>সাইনআপ</button>
                     <p id="signupError" class="text-red-400 text-center h-4"></p>
                     <p class="text-center text-gray-400">ইতিমধ্যে অ্যাকাউন্ট আছে? <button type="button" id="showLoginBtn" class="toggle-link">লগইন করুন</button></p>
                 </form>
@@ -121,24 +128,24 @@
     </div>
 
     <!-- Main Application Wrapper -->
-    <div id="appWrapper" class="hidden">
+    <div id="appWrapper" class="hidden p-4 sm:p-6 md:p-8">
         <!-- Main Page -->
         <div id="mainPage">
             <header class="flex justify-between items-center mb-8">
                 <h1 class="text-2xl sm:text-3xl font-bold text-cyan-400">UNIQUE COACHING CENTRE</h1>
-                <div>
+                <div class="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
                     <button id="dataButton" class="neon-button font-semibold py-2 px-6 rounded-lg">Data</button>
-                    <button id="logoutButtonMain" class="ml-2 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 px-6 rounded-lg">লগআউট</button>
+                    <button id="logoutButtonMain" class="bg-red-600 hover:bg-red-500 text-white font-semibold py-2 px-6 rounded-lg">লগআউট</button>
                 </div>
             </header>
 
             <main class="max-w-md mx-auto mt-10">
                 <form id="transactionForm" class="space-y-6 bg-slate-900/50 p-6 rounded-xl shadow-2xl shadow-cyan-500/10">
-                    <div><label for="date" class="block mb-2 text-sm font-medium text-gray-300">তারিখ</label><input type="date" id="date" name="date" class="neon-input w-full p-3 rounded-lg" required></div>
-                    <div><label for="type" class="block mb-2 text-sm font-medium text-gray-300">আয়ের ধরণ</label><select id="type" name="type" class="neon-input w-full p-3 rounded-lg" required><option value="income">আয়</option><option value="expense">ব্যয়</option></select></div>
+                    <div><label for="date" class="block mb-2 text-sm font-medium text-gray-300">তারিখ</label><input type="date" id="date" name="date" class="neon-input w-full p-3 rounded-lg transaction-field" required></div>
+                    <div><label for="type" class="block mb-2 text-sm font-medium text-gray-300">আয়ের ধরণ</label><select id="type" name="type" class="neon-input w-full p-3 rounded-lg transaction-field" required><option value="income">আয়</option><option value="expense">ব্যয়</option></select></div>
                     <div><label for="description" class="block mb-2 text-sm font-medium text-gray-300">বিবরণ</label><textarea id="description" name="description" rows="3" placeholder="লেনদেনের বিবরণ লিখুন" class="neon-input w-full p-3 rounded-lg"></textarea></div>
-                    <div><label for="amount" class="block mb-2 text-sm font-medium text-gray-300">টাকার পরিমাণ</label><input type="number" id="amount" name="amount" inputmode="decimal" placeholder="Amount in Taka" class="neon-input w-full p-3 rounded-lg" required></div>
-                    <button type="submit" id="submitButton" class="w-full neon-button font-bold py-3 px-6 rounded-lg text-lg flex justify-center items-center">সাবমিট</button>
+                    <div><label for="amount" class="block mb-2 text-sm font-medium text-gray-300">টাকার পরিমাণ</label><input type="number" id="amount" name="amount" inputmode="decimal" placeholder="Amount in Taka" class="neon-input w-full p-3 rounded-lg transaction-field" required></div>
+                    <button type="submit" id="submitButton" class="w-full neon-button font-bold py-3 px-6 rounded-lg text-lg flex justify-center items-center" disabled>সাবমিট</button>
                 </form>
             </main>
         </div>
@@ -150,7 +157,7 @@
                 <button id="logoutButtonData" class="bg-red-600 hover:bg-red-500 text-white font-semibold py-2 px-6 rounded-lg">লগআউট</button>
             </header>
             <main>
-                <div class="bg-slate-900/50 p-4 rounded-xl shadow-lg shadow-cyan-500/10 mb-8 flex flex-col sm:flex-row sm:items-end gap-4">
+                <div class="bg-slate-900/50 p-6 rounded-xl shadow-lg shadow-cyan-500/10 mb-8 flex flex-col sm:flex-row sm:items-end gap-4">
                     <div class="flex-grow"><label for="startDate" class="text-sm text-gray-400">শুরুর তারিখ</label><input type="date" id="startDate" class="neon-input w-full p-2 rounded-lg mt-1"></div>
                     <div class="flex-grow"><label for="endDate" class="text-sm text-gray-400">শেষের তারিখ</label><input type="date" id="endDate" class="neon-input w-full p-2 rounded-lg mt-1"></div>
                     <div class="flex gap-2 w-full sm:w-auto"><button id="searchButton" class="neon-button font-semibold py-2 px-6 rounded-lg w-full sm:w-auto">সার্চ</button><button id="resetButton" class="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-6 rounded-lg w-full sm:w-auto transition-colors">রিসেট</button></div>
@@ -168,7 +175,20 @@
                     </div>
                     <div class="mt-8 bg-slate-900/50 p-6 rounded-xl shadow-lg shadow-cyan-500/10">
                         <h3 class="text-xl font-bold mb-4 text-cyan-400">লেনদেনের তালিকা</h3>
-                        <div class="max-h-96 overflow-y-auto"><table class="w-full text-left"><thead><tr class="border-b border-cyan-700"><th class="p-2 w-12 text-center">নং</th><th class="p-2">তারিখ</th><th class="p-2">ধরন</th><th class="p-2">বিবরণ</th><th class="p-2 text-right">পরিমাণ</th></tr></thead><tbody id="transactionList"></tbody></table></div>
+                        <div>
+                            <table class="w-full text-left">
+                                <thead>
+                                    <tr class="border-b border-cyan-700">
+                                        <th class="p-2 w-12 text-center">নং</th>
+                                        <th class="p-2">তারিখ</th>
+                                        <th class="p-2">ধরন</th>
+                                        <th class="p-2">বিবরণ</th>
+                                        <th class="p-2 text-right">পরিমাণ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactionList"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -191,7 +211,9 @@
             
             // Auth Elements
             const loginForm = document.getElementById('loginForm');
+            const loginFields = document.querySelectorAll('.login-field');
             const signupForm = document.getElementById('signupForm');
+            const signupFields = document.querySelectorAll('.signup-field');
             const loginButton = document.getElementById('loginButton');
             const signupButton = document.getElementById('signupButton');
             const loginError = document.getElementById('loginError');
@@ -205,6 +227,7 @@
             const logoutButtonMain = document.getElementById('logoutButtonMain');
             const logoutButtonData = document.getElementById('logoutButtonData');
             const transactionForm = document.getElementById('transactionForm');
+            const transactionFields = document.querySelectorAll('.transaction-field');
             const dateInput = document.getElementById('date');
             const popup = document.getElementById('popup');
             const submitButton = document.getElementById('submitButton');
@@ -252,12 +275,23 @@
             };
             const handleLogout = () => {
                 localStorage.removeItem('isLoggedIn');
-                showLogin();
+                location.reload(); // Reload to reset state and clear history
             };
 
             // --- Event Listeners ---
             showSignupBtn.addEventListener('click', showSignup);
             showLoginBtn.addEventListener('click', showLogin);
+
+            // Form validation for enabling submit buttons
+            const validateForm = (fields, button) => {
+                const allFilled = [...fields].every(f => f.value.trim() !== '');
+                button.disabled = !allFilled;
+            };
+
+            loginFields.forEach(field => field.addEventListener('input', () => validateForm(loginFields, loginButton)));
+            signupFields.forEach(field => field.addEventListener('input', () => validateForm(signupFields, signupButton)));
+            transactionFields.forEach(field => field.addEventListener('input', () => validateForm(transactionFields, submitButton)));
+
 
             loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -296,8 +330,17 @@
                     .finally(() => { signupButton.disabled = false; signupButton.textContent = 'সাইনআপ'; });
             });
 
-            dataButton.addEventListener('click', () => { mainPage.classList.add('hidden'); dataPage.classList.remove('hidden'); fetchAndRenderData(); });
-            backButton.addEventListener('click', () => { dataPage.classList.add('hidden'); mainPage.classList.remove('hidden'); });
+            dataButton.addEventListener('click', () => {
+                mainPage.classList.add('hidden');
+                dataPage.classList.remove('hidden');
+                fetchAndRenderData();
+            });
+
+            backButton.addEventListener('click', () => {
+                dataPage.classList.add('hidden');
+                mainPage.classList.remove('hidden');
+            });
+
             logoutButtonMain.addEventListener('click', handleLogout);
             logoutButtonData.addEventListener('click', handleLogout);
 
@@ -309,11 +352,19 @@
                 fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
                     .then(res => res.json())
                     .then(data => {
-                        if(data.success) { showPopup('লেনদেন সফলভাবে জমা হয়েছে!'); transactionForm.reset(); setTodayDate(); } 
+                        if(data.success) { 
+                            showPopup('লেনদেন সফলভাবে জমা হয়েছে!'); 
+                            transactionForm.reset(); 
+                            setTodayDate();
+                            validateForm(transactionFields, submitButton); // Re-disable button
+                        } 
                         else { throw new Error(data.message || 'Something went wrong'); }
                     })
                     .catch(error => { showPopup(`একটি ত্রুটি হয়েছে: ${error.message}`, true); })
-                    .finally(() => { submitButton.disabled = false; submitButton.textContent = 'সাবমিট'; });
+                    .finally(() => { 
+                        submitButton.disabled = false; 
+                        submitButton.textContent = 'সাবমিট'; 
+                    });
             });
             
             const fetchAndRenderData = () => {
@@ -380,6 +431,7 @@
             // --- Initial Check ---
             if (localStorage.getItem('isLoggedIn') === 'true') { showApp(); } else { showLogin(); }
             setTodayDate();
+            validateForm(transactionFields, submitButton); // Initial check for transaction form
         });
     </script>
 </body>
