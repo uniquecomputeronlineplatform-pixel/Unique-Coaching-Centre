@@ -196,6 +196,7 @@
                                         <th class="p-2">ধরন</th>
                                         <th class="p-2">বিবরণ</th>
                                         <th class="p-2 text-right">পরিমাণ</th>
+                                        <th class="p-2 text-center">পদক্ষেপ</th>
                                     </tr>
                                 </thead>
                                 <tbody id="transactionList"></tbody>
@@ -206,6 +207,25 @@
             </main>
         </div>
     </div>
+    
+    <!-- Edit Transaction Modal -->
+    <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900/80 backdrop-blur-sm p-8 rounded-xl shadow-2xl shadow-cyan-500/20 max-w-md w-full">
+            <h2 class="text-2xl font-bold text-cyan-400 mb-6">লেনদেন সম্পাদনা করুন</h2>
+            <form id="editForm" class="space-y-6">
+                <input type="hidden" id="editTransactionId">
+                <div><label for="editDate" class="block mb-2 text-sm font-medium text-gray-300">তারিখ</label><input type="date" id="editDate" class="neon-input w-full p-3 rounded-lg" required></div>
+                <div><label for="editType" class="block mb-2 text-sm font-medium text-gray-300">আয়ের ধরণ</label><select id="editType" class="neon-input w-full p-3 rounded-lg" required><option value="income">আয়</option><option value="expense">ব্যয়</option></select></div>
+                <div><label for="editDescription" class="block mb-2 text-sm font-medium text-gray-300">বিবরণ</label><textarea id="editDescription" rows="3" class="neon-input w-full p-3 rounded-lg"></textarea></div>
+                <div><label for="editAmount" class="block mb-2 text-sm font-medium text-gray-300">টাকার পরিমাণ</label><input type="number" id="editAmount" inputmode="decimal" class="neon-input w-full p-3 rounded-lg" required></div>
+                <div class="flex gap-4 pt-4">
+                    <button type="button" id="cancelEditBtn" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-lg text-lg">বাতিল</button>
+                    <button type="submit" id="saveChangesBtn" class="w-full neon-button font-bold py-3 px-6 rounded-lg text-lg flex justify-center items-center">সংরক্ষণ করুন</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="popup" class="hidden fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-lg"></div>
 
     <script>
@@ -260,12 +280,25 @@
             const dataContent = document.getElementById('dataContent');
             let transactionChart = null;
             let allTransactions = [];
+            
+            // Edit Modal Elements
+            const editModal = document.getElementById('editModal');
+            const editForm = document.getElementById('editForm');
+            const cancelEditBtn = document.getElementById('cancelEditBtn');
+            const saveChangesBtn = document.getElementById('saveChangesBtn');
+            const editTransactionId = document.getElementById('editTransactionId');
+            const editDate = document.getElementById('editDate');
+            const editType = document.getElementById('editType');
+            const editDescription = document.getElementById('editDescription');
+            const editAmount = document.getElementById('editAmount');
+
 
             // --- Core Functions ---
             const setTodayDate = () => { dateInput.value = new Date().toISOString().split('T')[0]; };
             const showPopup = (message, isError = false) => {
                 popup.textContent = message;
                 popup.className = `fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-lg ${isError ? 'bg-red-500' : 'bg-green-500'}`;
+                popup.classList.remove('hidden');
                 popup.classList.add('popup-animate');
                 setTimeout(() => { popup.classList.add('hidden'); popup.classList.remove('popup-animate'); }, 4000);
             };
@@ -287,14 +320,13 @@
             };
             const handleLogout = () => {
                 localStorage.removeItem('isLoggedIn');
-                location.reload(); // Reload to reset state and clear history
+                location.reload();
             };
 
             // --- Event Listeners ---
             showSignupBtn.addEventListener('click', showSignup);
             showLoginBtn.addEventListener('click', showLogin);
 
-            // Form validation for enabling submit buttons
             const validateForm = (fields, button) => {
                 const allFilled = [...fields].every(f => f.value.trim() !== '');
                 button.disabled = !allFilled;
@@ -368,7 +400,7 @@
                             showPopup('লেনদেন সফলভাবে জমা হয়েছে!'); 
                             transactionForm.reset(); 
                             setTodayDate();
-                            validateForm(transactionFields, submitButton); // Re-disable button
+                            validateForm(transactionFields, submitButton);
                         } 
                         else { throw new Error(data.message || 'Something went wrong'); }
                     })
@@ -391,11 +423,63 @@
                     .finally(() => { dataLoader.classList.add('hidden'); dataContent.classList.remove('hidden'); });
             };
             
+            const handleEditClick = (e) => {
+                const id = e.currentTarget.dataset.id;
+                const transactionToEdit = allTransactions.find(t => t.id.toString() === id.toString());
+                if(transactionToEdit) {
+                    editTransactionId.value = transactionToEdit.id;
+                    editDate.value = new Date(transactionToEdit.date).toISOString().split('T')[0];
+                    editType.value = transactionToEdit.type;
+                    editDescription.value = transactionToEdit.biboron || '';
+                    editAmount.value = transactionToEdit.amount;
+                    editModal.classList.remove('hidden');
+                }
+            };
+
+            cancelEditBtn.addEventListener('click', () => {
+                editModal.classList.add('hidden');
+            });
+            
+            editForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveChangesBtn.disabled = true;
+                saveChangesBtn.innerHTML = `<div class="loader !w-6 !h-6 !border-2"></div>`;
+                
+                const updatedTransaction = {
+                    id: editTransactionId.value,
+                    date: editDate.value,
+                    type: editType.value,
+                    amount: parseFloat(editAmount.value),
+                    description: editDescription.value
+                };
+                
+                const payload = { action: 'editTransaction', transaction: updatedTransaction };
+
+                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            showPopup('লেনদেন সফলভাবে আপডেট হয়েছে!');
+                            editModal.classList.add('hidden');
+                            fetchAndRenderData(); // Refresh the data
+                        } else {
+                            throw new Error(data.message || 'Update failed');
+                        }
+                    })
+                    .catch(error => {
+                        showPopup(`আপডেট করা যায়নি: ${error.message}`, true);
+                    })
+                    .finally(() => {
+                        saveChangesBtn.disabled = false;
+                        saveChangesBtn.textContent = 'সংরক্ষণ করুন';
+                    });
+            });
+
             const renderDataPage = (transactions = allTransactions) => {
                 let totalIncome = 0, totalExpense = 0;
                 transactionListBody.innerHTML = ''; 
                 if (!transactions || transactions.length === 0) {
-                     transactionListBody.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-gray-400">কোনো লেনদেন পাওয়া যায়নি।</td></tr>`;
+                     transactionListBody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-gray-400">কোনো লেনদেন পাওয়া যায়নি।</td></tr>`;
                 } else {
                     transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
                     transactions.forEach((t, index) => {
@@ -416,10 +500,17 @@
                             <td class="p-2 capitalize">${t.type === 'income' ? 'আয়' : 'ব্যয়'}</td>
                             <td class="p-2 text-gray-300"><div class="max-w-[200px] overflow-x-auto whitespace-nowrap custom-scrollbar pb-1">${t.biboron || ''}</div></td>
                             <td class="p-2 text-right font-mono">৳ ${amount.toLocaleString('bn-BD')}</td>
+                            <td class="p-2 text-center">
+                                <button class="edit-btn text-cyan-400 hover:text-cyan-200" data-id="${t.id}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
+                                </button>
+                            </td>
                         `;
                         transactionListBody.appendChild(row);
                     });
                 }
+                document.querySelectorAll('.edit-btn').forEach(button => button.addEventListener('click', handleEditClick));
+
                 const totalProfit = totalIncome - totalExpense;
                 const totalCashFlow = totalIncome + totalExpense;
                 totalCashFlowEl.textContent = `৳ ${totalCashFlow.toLocaleString('bn-BD')}`;
@@ -456,8 +547,9 @@
             // --- Initial Check ---
             if (localStorage.getItem('isLoggedIn') === 'true') { showApp(); } else { showLogin(); }
             setTodayDate();
-            validateForm(transactionFields, submitButton); // Initial check for transaction form
+            validateForm(transactionFields, submitButton);
         });
     </script>
 </body>
 </html>
+
