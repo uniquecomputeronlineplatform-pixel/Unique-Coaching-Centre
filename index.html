@@ -416,7 +416,24 @@
                 fetch(SCRIPT_URL)
                     .then(res => res.json())
                     .then(res => {
-                        if(res.success) { allTransactions = res.data; renderDataPage(); } 
+                        if(res.success) { 
+                            allTransactions = res.data; 
+                            
+                            // *** NEW: Default to current month ***
+                            const now = new Date();
+                            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+                            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+                            
+                            startDateInput.value = firstDay;
+                            endDateInput.value = lastDay;
+
+                            const currentMonthTransactions = allTransactions.filter(t => {
+                                const transactionDate = new Date(t.date).toISOString().split('T')[0];
+                                return transactionDate >= firstDay && transactionDate <= lastDay;
+                            });
+                            
+                            renderDataPage(currentMonthTransactions); // Render only current month's data
+                        } 
                         else { throw new Error(res.message); }
                     })
                     .catch(error => { dataLoader.innerHTML = `<p class="text-red-400">ডেটা আনতে সমস্যা হয়েছে: ${error.message}</p>`; })
@@ -461,7 +478,8 @@
                         if (data.success) {
                             showPopup('লেনদেন সফলভাবে আপডেট হয়েছে!');
                             editModal.classList.add('hidden');
-                            fetchAndRenderData(); // Refresh the data
+                            // *** UPDATE: Re-fetch and render current month after edit ***
+                            fetchAndRenderData(); // Re-run the default logic
                         } else {
                             throw new Error(data.message || 'Update failed');
                         }
@@ -475,11 +493,11 @@
                     });
             });
 
-            const renderDataPage = (transactions = allTransactions) => {
+            const renderDataPage = (transactions) => { // Removed default assignment
                 let totalIncome = 0, totalExpense = 0;
                 transactionListBody.innerHTML = ''; 
                 if (!transactions || transactions.length === 0) {
-                     transactionListBody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-gray-400">কোনো লেনদেন পাওয়া যায়নি।</td></tr>`;
+                     transactionListBody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-gray-400">এই সময়ের মধ্যে কোনো লেনদেন পাওয়া যায়নি।</td></tr>`;
                 } else {
                     transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
                     transactions.forEach((t, index) => {
@@ -542,7 +560,11 @@
                     renderDataPage(filtered);
                 } else { alert('অনুগ্রহ করে শুরুর এবং শেষের তারিখ উভয়ই নির্বাচন করুন।'); }
             });
-            resetButton.addEventListener('click', () => { startDateInput.value = ''; endDateInput.value = ''; renderDataPage(allTransactions); });
+            resetButton.addEventListener('click', () => { 
+                startDateInput.value = ''; 
+                endDateInput.value = ''; 
+                renderDataPage(allTransactions); // Render all transactions
+            });
             
             // --- Initial Check ---
             if (localStorage.getItem('isLoggedIn') === 'true') { showApp(); } else { showLogin(); }
